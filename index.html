@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MyFinance</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-gray-800 text-white py-4 px-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="logo">
+                <h1 class="text-2xl font-bold">itungin.</h1>
+            </div>
+            <nav class="main-nav">
+                <ul class="flex space-x-8">
+                    <li><a href="index.html" class="hover:bg-gray-700 px-4 py-2 rounded" aria-label="Go to Dashboard">Dashboard</a></li>
+                    <li><a href="income.html" class="hover:bg-gray-700 px-4 py-2 rounded" aria-label="Go to Income">Income</a></li>
+                    <li><a href="expense.html" class="hover:bg-gray-700 px-4 py-2 rounded" aria-label="Go to Expense">Expense</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="dashboard py-8 px-10">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold mb-6">Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Income Card -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Total Income</h3>
+                    <p id="totalIncome" class="text-2xl font-bold text-green-600">Rp 0</p>
+                </div>
+                <!-- Expense Card -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Total Expense</h3>
+                    <p id="totalExpense" class="text-2xl font-bold text-red-600">Rp 0</p>
+                </div>
+                <!-- Balance Card -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Current Balance</h3>
+                    <p id="currentBalance" class="text-2xl font-bold text-blue-600">Rp 0</p>
+                </div>
+                <!-- Report Card -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Reports</h3>
+                    <p class="text-2xl font-bold">See Details</p>
+                </div>
+            </div>
+            <div class="mt-6">
+                <div class="glassmorphism p-6">
+                    <h3 class="text-xl font-semibold mb-4">Current Transactions</h3>
+                    <div class="flex justify-between mb-4">
+                        <button id="sortButton" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Sort by Amount (Descending)</button>
+                        <select id="filterType" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">
+                            <option value="all">All</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Transactions will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Reset Data -->
+            <div class="mt-6">
+                <button id="resetButton" class="bg-red-500 text-white px-4 py-2 rounded">Reset Data</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function updateDashboard() {
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+            const income = transactions.filter(t => t.type === 'Income').reduce((acc, t) => acc + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
+            const balance = income - expense;
+
+            document.getElementById('totalIncome').textContent = `Rp ${income.toLocaleString()}`;
+            document.getElementById('totalExpense').textContent = `Rp ${expense.toLocaleString()}`;
+            document.getElementById('currentBalance').textContent = `Rp ${balance.toLocaleString()}`;
+
+            renderTransactionsTable(transactions);
+        }
+
+        function renderTransactionsTable(transactions) {
+            const tbody = document.getElementById('transactionsTableBody');
+            const sortButton = document.getElementById('sortButton');
+            const filterType = document.getElementById('filterType').value;
+
+            let filteredTransactions = transactions;
+            if (filterType === 'income') {
+                filteredTransactions = transactions.filter(t => t.type === 'Income');
+            } else if (filterType === 'expense') {
+                filteredTransactions = transactions.filter(t => t.type === 'Expense');
+            }
+
+            // Sort by amount descending
+            filteredTransactions.sort((a, b) => b.amount - a.amount);
+
+            tbody.innerHTML = filteredTransactions.map(transaction => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp ${transaction.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboard();
+
+            document.getElementById('resetButton').addEventListener('click', () => {
+                localStorage.clear();
+                alert('Data has been reset.');
+                updateDashboard(); // Refresh the UI after reset
+            });
+
+            document.getElementById('sortButton').addEventListener('click', () => {
+                const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+                renderTransactionsTable(transactions);
+            });
+
+            document.getElementById('filterType').addEventListener('change', () => {
+                const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+                renderTransactionsTable(transactions);
+            });
+        });
+    </script>
+</body>
+</html>
