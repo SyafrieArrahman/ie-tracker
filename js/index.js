@@ -24,10 +24,15 @@ function saveData() {
   localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
+// Format currency to Rp with thousands separator
+function formatCurrency(amount) {
+  return 'Rp. ' + amount.toLocaleString('id-ID');
+}
+
 function updateTotals() {
-  document.getElementById('total-income').textContent = `Rp. ${totalIncome}`;
-  document.getElementById('total-expense').textContent = `Rp. ${totalExpense}`;
-  document.getElementById('total-balance').textContent = `Rp. ${totalIncome - totalExpense}`;
+  document.getElementById('total-income').textContent = formatCurrency(totalIncome);
+  document.getElementById('total-expense').textContent = formatCurrency(totalExpense);
+  document.getElementById('total-balance').textContent = formatCurrency(totalIncome - totalExpense);
 }
 
 function addTransaction(type, date, description, amount) {
@@ -57,11 +62,13 @@ function renderTransactions() {
   filteredTransactions.forEach(t => {
     const row = table.insertRow();
     row.innerHTML = `
-                    <td class="p-2">${t.type}</td>
-                    <td class="p-2">${t.date}</td>
-                    <td class="p-2">${t.description}</td>
-                    <td class="p-2 text-right ${t.type === 'Income' ? '' : 'text-red-500'}">${t.type === 'Income' ? '' : '- '}Rp. ${Math.abs(t.amount)}</td>
-                `;
+      <td class="p-2">${t.type}</td>
+      <td class="p-2">${t.date}</td>
+      <td class="p-2">${t.description}</td>
+      <td class="p-2 text-right ${t.type === 'Income' ? '' : 'text-red-500'}">
+        ${t.type === 'Income' ? '' : '- '}${formatCurrency(Math.abs(t.amount))}
+      </td>
+    `;
   });
 }
 

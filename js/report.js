@@ -10,6 +10,11 @@ function loadData() {
   }
 }
 
+// Format currency to Rp with thousands separator
+function formatCurrency(amount) {
+  return 'Rp. ' + amount.toLocaleString('id-ID');
+}
+
 function renderTransactions() {
   const table = document.getElementById('transaction-table');
   table.innerHTML = '';
@@ -17,11 +22,13 @@ function renderTransactions() {
   transactions.forEach(t => {
     const row = table.insertRow();
     row.innerHTML = `
-                    <td class="p-2">${t.type}</td>
-                    <td class="p-2">${t.date}</td>
-                    <td class="p-2">${t.description}</td>
-                    <td class="p-2 text-right ${t.type === 'Income' ? 'text-green-500' : 'text-red-500'}">${t.type === 'Income' ? '' : '- '}Rp. ${Math.abs(t.amount)}</td>
-                `;
+      <td class="p-2">${t.type}</td>
+      <td class="p-2">${t.date}</td>
+      <td class="p-2">${t.description}</td>
+      <td class="p-2 text-right ${t.type === 'Income' ? 'text-green-500' : 'text-red-500'}">
+        ${t.type === 'Income' ? '' : '- '}${formatCurrency(Math.abs(t.amount))}
+      </td>
+    `;
   });
 }
 
@@ -67,32 +74,32 @@ function downloadReport() {
   // Get the report content
   const reportContent = document.createElement('div');
   reportContent.innerHTML = `
-                <h1>IE Tracker Report</h1>
-                
-                <h2>Transaction History</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${transactions.map(t => `
-                            <tr>
-                                <td>${t.type}</td>
-                                <td>${t.date}</td>
-                                <td>${t.description}</td>
-                                <td style="color: ${t.type === 'Income' ? 'green' : 'red'}">
-                                    ${t.type === 'Income' ? '' : '- '}Rp. ${Math.abs(t.amount)}
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+    <h1>IE Tracker Report</h1>
+    
+    <h2>Transaction History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${transactions.map(t => `
+          <tr>
+            <td>${t.type}</td>
+            <td>${t.date}</td>
+            <td>${t.description}</td>
+            <td style="color: ${t.type === 'Income' ? 'green' : 'red'}">
+              ${t.type === 'Income' ? '' : '- '}${formatCurrency(Math.abs(t.amount))}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
 
   // Add the transaction table to the PDF
   doc.html(reportContent, {
